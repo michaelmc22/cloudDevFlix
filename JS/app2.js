@@ -2,8 +2,6 @@
 IUPS = "https://prod-20.centralus.logic.azure.com:443/workflows/1dbcfaa6dda64211ab457c765af30b97/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=opAtWU2lvf8PxCn9GfjAJXHtaESiIf2A1pss4EfbwBk";
 RAI = "https://prod-09.centralus.logic.azure.com:443/workflows/a4784be0b90740119a5cdf4b5f76dd40/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=H0B4saAWkVzuXqqOkG_eNaXhUyIOZdr1WC7QekjJu4E";
 
-DIAURL0 = "https://prod-58.eastus.logic.azure.com/workflows/151cc06780394e7099d1d59a9680e7a5/triggers/manual/paths/invoke/";
-DIAURI1 = "?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aznSAAt5iV_Btd6LwppKYeOWOcnaIR7k8O3qr0YWTl8";
 
 BLOB_ACCOUNT = "https://videoblobserv.blob.core.windows.net";
 
@@ -11,19 +9,21 @@ BLOB_ACCOUNT = "https://videoblobserv.blob.core.windows.net";
 $(document).ready(function() {
 
  
-  $("#retImages").click(function(){
+  $("#retUsers").click(function(){
 
       //Run the get asset list function
-      getImages();
+      getUsers();
 
   }); 
 
-  $("#delete").click(function(){
+  $("#enterForm").click(function(){
 
-    //Run the get asset list function
-    deleteAsset();
+      //Run the get asset list function
+      signIn();
 
-}); 
+  }); 
+
+ 
 
    //Handler for the new asset submission button
   $("#subNewForm").click(function(){
@@ -39,10 +39,8 @@ function submitNewAsset(){
   //Create a form data object
    submitData = new FormData();
    //Get form variables and append them to the form data object
-   submitData.append('FileName', $('#FileName').val());
-   submitData.append('userID', $('#userID').val());
-   submitData.append('userName', $('#userName').val());
-   submitData.append('File', $("#UpFile")[0].files[0]);
+   submitData.append('userName', $('#userNameSignUp').val());
+   submitData.append('pass', $("#passSignUp")[0].files[0]);
   
    //Post the form data to the endpoint, note the need to set the content type header
    $.ajax({
@@ -60,7 +58,7 @@ function submitNewAsset(){
   }
 
 //A function to get a list of all the assets and write them to the Div with the AssetList Div
-function getImages(){
+function getUsers(){
   //Replace the current HTML in that div with a loading message
    $('#ImageList').html('<div class="spinner-border" role="status"><span class="sr-only"> &nbsp;</span>');
    $.getJSON(RAI, function( data ) {
@@ -71,10 +69,9 @@ function getImages(){
    $.each( data, function( key, val ) {
    items.push( "<hr />");
    items.push("<embed src='"+BLOB_ACCOUNT + val["filePath"] +"' width='500'" + "' height='500'" + "<track " + "label='English " + "kind='captions " + "srclang='en '" + "default />" + "<br />");
-   items.push("Uploaded by: " + val["userName"] + " (user id: "+val["userID"]+")<br />");
-   items.push("</br>");
-   items.push('<button type="button" id="delete" class="btn btndanger" onclick="deleteAsset('+ val["userId"] +')">Delete</button> <br/><br/>');
-  });
+   items.push( "Uploaded by: " + val["userName"] + " (user id: "+val["userID"]+")<br />");
+   items.push( "<hr />");
+   });
    //Clear the assetlist div
    $('#ImageList').empty();
    //Append the contents of the items array to the ImageList Div
@@ -89,10 +86,36 @@ function getImages(){
     $.ajax({
     type: "DELETE",
     //Note the need to concatenate the
-    url: DIAURL0 + val["id"] + DIAURI1,
-    }).done(function( msg ) {
+    url: DIAURI0 + id + DIAURI1,
+    }).done(function( data ) {
     //On success, update the assetlist.
-    getAssetList();
+    alert("deleted successfully")
     });
     }
+
+    //A function to get a list of all the assets and write them to the Div with the AssetList Div
+function signIn(){
+    //Replace the current HTML in that div with a loading message
+     $('#userList').html('<div class="spinner-border" role="status"><span class="sr-only"> &nbsp;</span>');
+     $.getJSON(RAI, function( data ) {
+     //Create an array to hold all the retrieved assets
+     var items = [];
+    
+     //Iterate through the returned records and build HTML, incorporating the key values of the record in the data
+     $.each( data, function( key, val ) {
+     items.push( "<hr />");
+     items.push( "Username: " + val["userName"] + " (User id: "+val["userID"]+")<br />");
+     items.push( "Pass: " + val["pass"] + "<br />");
+     items.push( "<hr />");
+     });
+     //Clear the assetlist div
+     $('#ImageList').empty();
+     //Append the contents of the items array to the ImageList Div
+     $( "<ul/>", {
+     "class": "my-new-list",
+     html: items.join( "" )
+     }).appendTo( "#ImageList" );
+     });
+    }
+  
 
